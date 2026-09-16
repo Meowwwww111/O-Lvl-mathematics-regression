@@ -1,0 +1,46 @@
+name: Train and evaluate models
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "main.py"
+      - "src/**"
+      - "data/**"
+      - "requirements.txt"
+      - ".github/workflows/train-and-evaluate.yml"
+  workflow_dispatch:
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Train and compare models
+        run: python main.py
+
+      - name: Show model comparison
+        run: |
+          echo "=== Model comparison ==="
+          cat reports/model_comparison.csv
+          echo "=== Final test metrics ==="
+          cat reports/final_test_metrics.json
+
+      - name: Upload evaluation reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-evaluation-reports
+          path: reports/
